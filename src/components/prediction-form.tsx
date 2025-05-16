@@ -38,12 +38,12 @@ import { toast } from "sonner";
 
 const formSchema = z.object({
   modelType: z.string(),
-  currentMin: z.coerce.number().min(-1).max(100),
-  currentMax: z.coerce.number().min(-1).max(100),
-  currentSteps: z.coerce.number().min(0.1).max(100),
-  temperature: z.coerce.number().min(-1.5).max(200),
-  hydrogen: z.coerce.number().min(-2).max(100),
-  oxygen: z.coerce.number().min(-2).max(100),
+  currentMin: z.coerce.number().min(-1).max(3),
+  currentMax: z.coerce.number().min(-1).max(3),
+  currentSteps: z.coerce.number().min(0.01).max(1),
+  temperature: z.coerce.number().min(-2).max(2),
+  hydrogen: z.coerce.number().min(-2).max(3),
+  oxygen: z.coerce.number().min(-3).max(3),
 });
 
 export function PredictionForm() {
@@ -59,12 +59,12 @@ export function PredictionForm() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       modelType: "linear",
-      currentMin: 0,
-      currentMax: 50,
-      currentSteps: 1,
-      temperature: 2.5,
-      hydrogen: 10,
-      oxygen: 10,
+      currentMin: -0.88678,
+      currentMax: 2.21713,
+      currentSteps: 0.1,
+      temperature: -1.26144,
+      hydrogen: -1.87323,
+      oxygen: -1.22799,
     },
   });
 
@@ -247,9 +247,9 @@ export function PredictionForm() {
                     <FormLabel>Steps: {field.value}</FormLabel>
                     <FormControl>
                       <Slider
-                        min={0.1}
-                        max={50}
-                        step={1}
+                        min={0.001}
+                        max={1}
+                        step={0.01}
                         value={[field.value]}
                         onValueChange={(value) => field.onChange(value[0])}
                       />
@@ -276,9 +276,9 @@ export function PredictionForm() {
                     <FormLabel>Temperature (°C): {field.value}</FormLabel>
                     <FormControl>
                       <Slider
-                        min={-1.5}
-                        max={120}
-                        step={1}
+                        min={-2}
+                        max={2}
+                        step={0.1}
                         value={[field.value]}
                         onValueChange={(value) => field.onChange(value[0])}
                       />
@@ -298,8 +298,8 @@ export function PredictionForm() {
                     <FormControl>
                       <Slider
                         min={-2}
-                        max={100}
-                        step={1}
+                        max={3}
+                        step={0.1}
                         value={[field.value]}
                         onValueChange={(value) => field.onChange(value[0])}
                       />
@@ -318,9 +318,9 @@ export function PredictionForm() {
                     </FormLabel>
                     <FormControl>
                       <Slider
-                        min={-2}
-                        max={100}
-                        step={1}
+                        min={-3}
+                        max={3}
+                        step={0.1}
                         value={[field.value]}
                         onValueChange={(value) => field.onChange(value[0])}
                       />
