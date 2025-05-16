@@ -7,6 +7,8 @@ export async function POST(request: Request) {
 
     const { modelType, currents, temperature, hydrogen, oxygen} = data
 
+    console.log("Currents:", currents)
+
     const payload = {
       model_type: modelType,
       I: currents,

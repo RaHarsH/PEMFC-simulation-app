@@ -34,15 +34,16 @@ import { Slider } from "@/components/ui/slider";
 
 import { Save, Zap } from "lucide-react";
 import axios from "axios";
+import { toast } from "sonner";
 
 const formSchema = z.object({
   modelType: z.string(),
-  currentMin: z.coerce.number().min(0).max(100),
-  currentMax: z.coerce.number().min(0).max(100),
-  currentSteps: z.coerce.number().int().min(2).max(100),
-  temperature: z.coerce.number().min(0).max(200),
-  hydrogen: z.coerce.number().min(0).max(100),
-  oxygen: z.coerce.number().min(0).max(100),
+  currentMin: z.coerce.number().min(-1).max(100),
+  currentMax: z.coerce.number().min(-1).max(100),
+  currentSteps: z.coerce.number().min(0.1).max(100),
+  temperature: z.coerce.number().min(-1.5).max(200),
+  hydrogen: z.coerce.number().min(-2).max(100),
+  oxygen: z.coerce.number().min(-2).max(100),
 });
 
 export function PredictionForm() {
@@ -60,22 +61,37 @@ export function PredictionForm() {
       modelType: "linear",
       currentMin: 0,
       currentMax: 50,
-      currentSteps: 10,
-      temperature: 80,
-      hydrogen: 95,
-      oxygen: 21,
+      currentSteps: 1,
+      temperature: 2.5,
+      hydrogen: 10,
+      oxygen: 10,
     },
   });
+
+  function range(min: number, max: number, step: number): number[] {
+    const direction = min < max ? 1 : -1;
+    step = Math.abs(step);
+
+    const length = Math.floor(Math.abs((max - min) / step)) + 1;
+    const baseArray = Array.from(
+      { length },
+      (_, i) => min + i * step * direction
+    );
+
+    if (baseArray[baseArray.length - 1] !== max) {
+      baseArray.push(max);
+    }
+
+    return baseArray;
+  }
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true);
     try {
-      const currentRange = Array.from(
-        { length: values.currentSteps },
-        (_, i) =>
-          values.currentMin +
-          (values.currentMax - values.currentMin) *
-            (i / (values.currentSteps - 1))
+      const currentRange = range(
+        values.currentMin,
+        values.currentMax,
+        values.currentSteps
       );
 
       const predictionData = {
@@ -83,11 +99,14 @@ export function PredictionForm() {
         currents: currentRange,
       };
 
+      console.log("DEBUG: Prediction data:", predictionData);
+
       const response = await axios.post("/api/predict", predictionData);
 
       const { voltages, powers, currents } = response.data;
 
-      // Save to state
+      toast.success("Prediction successful");
+
       setPredictionResult({
         voltages,
         powers,
@@ -106,6 +125,7 @@ export function PredictionForm() {
       window.dispatchEvent(event);
     } catch (error) {
       console.error("Prediction failed:", error);
+      toast.error("Prediction failed");
       setPredictionResult(null);
     } finally {
       setIsSubmitting(false);
@@ -132,10 +152,10 @@ export function PredictionForm() {
         },
       });
 
-      // toast.success("Saved to database")
+      toast.success("Saved to database");
     } catch (error) {
       console.error("Save failed:", error);
-      // toast.error("Failed to save")
+      toast.error("Failed to save");
     } finally {
       setIsSubmitting(false);
     }
@@ -227,7 +247,7 @@ export function PredictionForm() {
                     <FormLabel>Steps: {field.value}</FormLabel>
                     <FormControl>
                       <Slider
-                        min={2}
+                        min={0.1}
                         max={50}
                         step={1}
                         value={[field.value]}
@@ -256,7 +276,7 @@ export function PredictionForm() {
                     <FormLabel>Temperature (°C): {field.value}</FormLabel>
                     <FormControl>
                       <Slider
-                        min={20}
+                        min={-1.5}
                         max={120}
                         step={1}
                         value={[field.value]}
@@ -277,7 +297,7 @@ export function PredictionForm() {
                     </FormLabel>
                     <FormControl>
                       <Slider
-                        min={0}
+                        min={-2}
                         max={100}
                         step={1}
                         value={[field.value]}
@@ -298,7 +318,7 @@ export function PredictionForm() {
                     </FormLabel>
                     <FormControl>
                       <Slider
-                        min={0}
+                        min={-2}
                         max={100}
                         step={1}
                         value={[field.value]}
