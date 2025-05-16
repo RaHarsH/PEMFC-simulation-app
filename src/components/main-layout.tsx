@@ -6,6 +6,7 @@ import { Sidebar } from "@/components/sidebar"
 import { useSidebar } from "@/components/sidebar-provider"
 import { Button } from "@/components/ui/button"
 import { Menu } from "lucide-react"
+import { DocumentationDialog } from "@/components/documentation-dialog"
 
 export function MainLayout({ children }: { children: React.ReactNode }) {
   const { isOpen, toggle, isMobile } = useSidebar()
@@ -20,6 +21,9 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
             <span className="sr-only">Toggle sidebar</span>
           </Button>
           <h1 className="text-xl font-semibold">PEMFC Voltage Prediction</h1>
+          <div className="ml-auto flex items-center gap-2">
+            <DocumentationDialog />
+          </div>
         </header>
         <main className="flex-1">{children}</main>
       </div>

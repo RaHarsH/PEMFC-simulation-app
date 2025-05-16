@@ -57,7 +57,6 @@ const PredictionPage = ({ params }: PredictionPageProps) => {
     fetchPredictionById(predictionId)
   }, [predictionId])
 
-  // Calculate max power and voltage with their corresponding current values
   const getMaxValues = () => {
     if (!data) return { maxPower: 0, maxPowerCurrent: 0, maxVoltage: 0, maxVoltageCurrent: 0 }
 
@@ -88,7 +87,6 @@ const PredictionPage = ({ params }: PredictionPageProps) => {
     }
   }
 
-  // Format data for charts
   const formatChartData = (data: PredictionData | null) => {
     if (!data) return []
 
@@ -102,7 +100,7 @@ const PredictionPage = ({ params }: PredictionPageProps) => {
   const chartData = formatChartData(data)
   const { maxPower, maxPowerCurrent, maxVoltage, maxVoltageCurrent } = getMaxValues()
 
-  // Format model type for display
+
   const getModelName = (modelType: string) => {
     switch (modelType) {
       case "linear":
@@ -136,7 +134,7 @@ const PredictionPage = ({ params }: PredictionPageProps) => {
         </div>
 
         <div className="flex flex-col lg:flex-row gap-6">
-          {/* Left side - Prediction details */}
+          {/* Left side - Prediction details section */}
           <div className="w-full lg:w-1/3">
             <Card className="h-full">
               <CardHeader>
@@ -190,7 +188,7 @@ const PredictionPage = ({ params }: PredictionPageProps) => {
                           <Wind className="h-5 w-5" />
                         </div>
                         <div>
-                          <p className="text-sm text-muted-foreground">Hydrogen</p>
+                          <p className="text-sm text-muted-foreground">Hydrogen flow rate</p>
                           <p className="font-medium">{data.hydrogen}%</p>
                         </div>
                       </div>
@@ -200,7 +198,7 @@ const PredictionPage = ({ params }: PredictionPageProps) => {
                           <Droplet className="h-5 w-5" />
                         </div>
                         <div>
-                          <p className="text-sm text-muted-foreground">Oxygen</p>
+                          <p className="text-sm text-muted-foreground">Oxygen flow rate</p>
                           <p className="font-medium">{data.oxygen}%</p>
                         </div>
                       </div>
@@ -255,7 +253,7 @@ const PredictionPage = ({ params }: PredictionPageProps) => {
             </Card>
           </div>
 
-          {/* Right side - Graphs */}
+          {/* Right side - Graphs section */}
           <div className="w-full lg:w-2/3">
             <Card className="h-full">
               <CardHeader>

@@ -28,16 +28,14 @@ export function PredictionResults() {
       }, 1000)
     }
 
-    // Add event listener
     window.addEventListener("prediction-updated", handlePredictionUpdate as EventListener)
 
-    // Cleanup
     return () => {
       window.removeEventListener("prediction-updated", handlePredictionUpdate as EventListener)
     }
   }, [])
 
-  // Format data for charts
+  // Format data for displaying in charts
   const formatChartData = (data: PredictionData | null) => {
     if (!data) return []
 
