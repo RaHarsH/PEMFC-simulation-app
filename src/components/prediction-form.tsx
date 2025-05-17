@@ -36,8 +36,21 @@ import { Save, Zap } from "lucide-react";
 import axios from "axios";
 import { toast } from "sonner";
 
-const formSchema = z.object({
-  modelType: z.string(),
+
+const otherModelsSchema = z.object({
+  modelType: z.enum(["linear", "ann"]),
+  currentMin: z.coerce.number().min(-1).max(3),
+  currentMax: z.coerce.number().min(-1).max(3),
+  currentSteps: z.coerce.number().min(0.01).max(1),
+  temperature: z.coerce.number().min(-2).max(2),
+  hydrogen: z.coerce.number().min(-2).max(3),
+  oxygen: z.coerce.number().min(-3).max(3),
+  RH_Cathode: z.coerce.number().min(-2).max(2),
+  RH_Anode: z.coerce.number().min(-3).max(3),
+});
+
+const svrModelSchema = z.object({
+  modelType: z.literal("svr"),
   currentMin: z.coerce.number().min(-1).max(3),
   currentMax: z.coerce.number().min(-1).max(3),
   currentSteps: z.coerce.number().min(0.01).max(1),
@@ -45,6 +58,12 @@ const formSchema = z.object({
   hydrogen: z.coerce.number().min(-2).max(3),
   oxygen: z.coerce.number().min(-3).max(3),
 });
+
+export const formSchema = z.discriminatedUnion("modelType", [
+  otherModelsSchema,
+  svrModelSchema,
+]);
+
 
 export function PredictionForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -65,6 +84,8 @@ export function PredictionForm() {
       temperature: -1.26144,
       hydrogen: -1.87323,
       oxygen: -1.22799,
+      RH_Cathode: -1.5,
+      RH_Anode: -2,
     },
   });
 
@@ -84,6 +105,8 @@ export function PredictionForm() {
 
     return baseArray;
   }
+
+  const modelType = form.watch("modelType");
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true);
@@ -292,9 +315,7 @@ export function PredictionForm() {
                 name="hydrogen"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>
-                      Hydrogen Concentration (%): {field.value}
-                    </FormLabel>
+                    <FormLabel>Hydrogen flow rate: {field.value}</FormLabel>
                     <FormControl>
                       <Slider
                         min={-2}
@@ -313,9 +334,7 @@ export function PredictionForm() {
                 name="oxygen"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>
-                      Oxygen Concentration (%): {field.value}
-                    </FormLabel>
+                    <FormLabel>Oxygen flow rate: {field.value}</FormLabel>
                     <FormControl>
                       <Slider
                         min={-3}
@@ -329,6 +348,51 @@ export function PredictionForm() {
                   </FormItem>
                 )}
               />
+              {(modelType === "linear" || modelType === "ann") && (
+                <>
+                  {/* Relative Humidity of Cathode */}
+                  <FormField
+                    control={form.control}
+                    name="RH_Cathode"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>RH Cathode: {field.value}</FormLabel>
+                        <FormControl>
+                          <Slider
+                            min={-2}
+                            max={3}
+                            step={0.1}
+                            value={[field.value]}
+                            onValueChange={(value) => field.onChange(value[0])}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Relative Humidity of Anode */}
+                  <FormField
+                    control={form.control}
+                    name="RH_Anode"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>RH Anode: {field.value}</FormLabel>
+                        <FormControl>
+                          <Slider
+                            min={-3}
+                            max={3}
+                            step={0.1}
+                            value={[field.value]}
+                            onValueChange={(value) => field.onChange(value[0])}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </>
+              )}
             </div>
 
             {/* Submit Buttons */}

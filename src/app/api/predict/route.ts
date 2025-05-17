@@ -1,15 +1,26 @@
 import { NextResponse } from "next/server"
 import axios from "axios"
 
+interface PredictionPayload {
+  model_type: string
+  I: number[]
+  T: number
+  Hydrogen: number
+  Oxygen: number
+  RH_Cathode?: number
+  RH_Anode?: number
+}
+
+
 export async function POST(request: Request) {
   try {
     const data = await request.json()
 
-    const { modelType, currents, temperature, hydrogen, oxygen} = data
+    const { modelType, currents, temperature, hydrogen, oxygen, RH_Cathode, RH_Anode} = data
 
     console.log("Currents:", currents)
 
-    const payload = {
+    const payload: PredictionPayload = {
       model_type: modelType,
       I: currents,
       T: temperature,
@@ -17,7 +28,11 @@ export async function POST(request: Request) {
       Oxygen: oxygen,
     }
 
-    // Send the request to FastAPI backend using Axios
+    if (modelType === "linear" || modelType === "ann") {
+      payload.RH_Cathode = RH_Cathode
+      payload.RH_Anode = RH_Anode
+    }
+
     const response = await axios.post("http://127.0.0.1:8000/predict-output", payload, {
       headers: {
         "Content-Type": "application/json",

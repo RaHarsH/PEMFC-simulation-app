@@ -20,7 +20,7 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
             <Menu className="h-5 w-5" />
             <span className="sr-only">Toggle sidebar</span>
           </Button>
-          <h1 className="text-xl font-semibold">PEMFC Voltage Prediction</h1>
+          <h1 className="text-xl font-semibold">PEMFC Stack Voltage Prediction</h1>
           <div className="ml-auto flex items-center gap-2">
             <DocumentationDialog />
           </div>

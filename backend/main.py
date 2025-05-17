@@ -7,7 +7,9 @@ import io
 import base64
 import joblib
 import os
-from typing import List
+from typing import List, Optional
+
+from keras.models import load_model
 
 
 
@@ -23,9 +25,10 @@ app.add_middleware(
 )
 
 MODEL_PATHS = {
-    'linear': 'models/linear_model.pkl',
+    # dont use linear_model.pkl since it takes 8 features as input, use linear_model2.pkl
+    'linear': 'models/linear_model2.pkl',
     'svr': 'models/svr_model.pkl',
-    # 'ann': 'models/ann_model.h5',
+    'ann': 'models/ann_model.h5',
 }
 
 class PredictionRequest(BaseModel):
@@ -35,6 +38,8 @@ class PredictionRequest(BaseModel):
     T: float
     Hydrogen: float
     Oxygen: float
+    RH_Cathode: Optional[float] = None
+    RH_Anode: Optional[float] = None
 
 
 @app.post('/predict-output')
@@ -49,8 +54,10 @@ async def predict(data: PredictionRequest):
     if not os.path.exists(model_path):
         raise HTTPException(status_code = 500, detail = "Model file not found")
 
-    
-    model = joblib.load(model_path)
+    if model_type == 'ann':
+        model = load_model(model_path, compile = False)
+    else:
+        model = joblib.load(model_path)
 
     voltages = []
     powers = []
@@ -59,6 +66,11 @@ async def predict(data: PredictionRequest):
 
     for current in data.I:
         input_data = np.array([[current, data.T, data.Hydrogen, data.Oxygen]])
+
+        if model_type == 'linear' or model_type == 'ann':
+            input_data = np.append(input_data, [[data.RH_Cathode, data.RH_Anode]], axis = 1)
+
+        
         voltage_pred = float(model.predict(input_data)[0])
         power = current * voltage_pred
 
