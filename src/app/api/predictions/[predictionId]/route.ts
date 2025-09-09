@@ -1,5 +1,4 @@
 import { db } from "@/lib/db";
-import { ReceiptPoundSterlingIcon } from "lucide-react";
 
 export async function GET(request: Request, { params }: { params: { predictionId: string } }) {
     try {

@@ -28,7 +28,7 @@ export async function POST(request: Request) {
       Oxygen: oxygen,
     }
 
-    if (modelType === "linear" || modelType === "ann") {
+    if (modelType === "linear" || modelType === "ann" || modelType === "stack_model") {
       payload.RH_Cathode = RH_Cathode
       payload.RH_Anode = RH_Anode
     }

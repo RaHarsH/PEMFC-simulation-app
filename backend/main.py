@@ -29,6 +29,7 @@ MODEL_PATHS = {
     'linear': 'models/linear_model2.pkl',
     'svr': 'models/svr_model.pkl',
     'ann': 'models/ann_model.h5',
+    'stack_model': 'models/baseline_stacking_model.pkl',
 }
 
 class PredictionRequest(BaseModel):
@@ -67,7 +68,7 @@ async def predict(data: PredictionRequest):
     for current in data.I:
         input_data = np.array([[current, data.T, data.Hydrogen, data.Oxygen]])
 
-        if model_type == 'linear' or model_type == 'ann':
+        if model_type == 'linear' or model_type == 'ann' or model_type == 'stack_model':
             input_data = np.append(input_data, [[data.RH_Cathode, data.RH_Anode]], axis = 1)
 
         

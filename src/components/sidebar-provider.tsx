@@ -23,7 +23,7 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
   const [isMobile, setIsMobile] = useState(false)
   const pathname = usePathname()
 
-  // Check if mobile on mount and when window resizes
+
   useEffect(() => {
     const checkIfMobile = () => {
       setIsMobile(window.innerWidth < 768)
@@ -34,17 +34,15 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
       }
     }
 
-    // Initial check
+
     checkIfMobile()
 
-    // Add event listener
     window.addEventListener("resize", checkIfMobile)
 
-    // Cleanup
     return () => window.removeEventListener("resize", checkIfMobile)
   }, [])
 
-  // Close sidebar on mobile when route changes
+  // Close the sidebar on mobile when route changes
   useEffect(() => {
     if (isMobile) {
       setIsOpen(false)

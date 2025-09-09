@@ -36,9 +36,8 @@ import { Save, Zap } from "lucide-react";
 import axios from "axios";
 import { toast } from "sonner";
 
-
 const otherModelsSchema = z.object({
-  modelType: z.enum(["linear", "ann"]),
+  modelType: z.enum(["linear", "ann", "stack_model"]),
   currentMin: z.coerce.number().min(-1).max(3),
   currentMax: z.coerce.number().min(-1).max(3),
   currentSteps: z.coerce.number().min(0.01).max(1),
@@ -63,7 +62,6 @@ export const formSchema = z.discriminatedUnion("modelType", [
   otherModelsSchema,
   svrModelSchema,
 ]);
-
 
 export function PredictionForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -219,6 +217,9 @@ export function PredictionForm() {
                       <SelectItem value="ann">
                         Artificial Neural Network (ANN)
                       </SelectItem>
+                      <SelectItem value="stack_model">
+                        Baseline Stack Model
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                   <FormDescription>
@@ -348,7 +349,9 @@ export function PredictionForm() {
                   </FormItem>
                 )}
               />
-              {(modelType === "linear" || modelType === "ann") && (
+              {(modelType === "linear" ||
+                modelType === "ann" ||
+                modelType === "stack_model") && (
                 <>
                   {/* Relative Humidity of Cathode */}
                   <FormField

@@ -9,6 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { PlusCircle, Zap, ChevronRight, BarChart } from "lucide-react";
 import { formatDistanceToNow, set } from "date-fns";
 import axios from "axios";
+import { useRouter } from "next/navigation";
 
 type Prediction = {
   id: string;
@@ -20,6 +21,7 @@ export function Sidebar() {
   const { isOpen } = useSidebar();
   const [predictions, setPredictions] = useState<Prediction[]>([]);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
     const fetchPredictions = async () => {
@@ -32,7 +34,6 @@ export function Sidebar() {
         console.log("🟢 Fetched predictions successfully:", data);
         setPredictions(data);
         setLoading(false);
-
       } catch (error) {
         console.error("Failed to fetch predictions:", error);
         setLoading(false);
@@ -41,6 +42,11 @@ export function Sidebar() {
 
     fetchPredictions();
   }, []);
+
+  const reloadPage = () => {
+    router.push("/");
+    router.refresh();
+  };
 
   if (!isOpen) {
     return null;
@@ -55,7 +61,10 @@ export function Sidebar() {
         </Link>
       </div>
       <div className="flex flex-col gap-4 p-6">
-        <Button className="w-full justify-start gap-2">
+        <Button
+          className="w-full justify-start gap-2 cursor-pointer"
+          onClick={reloadPage}
+        >
           <PlusCircle className="h-4 w-4" />
           New Prediction
         </Button>
