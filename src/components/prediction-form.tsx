@@ -70,6 +70,11 @@ export function PredictionForm() {
     voltages: number[];
     powers: number[];
     modelType: string;
+    temperature?: number;
+    hydrogen?: number;
+    oxygen?: number;
+    RH_Cathode?: number;
+    RH_Anode?: number;
   } | null>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -124,7 +129,17 @@ export function PredictionForm() {
 
       const response = await axios.post("/api/predict", predictionData);
 
-      const { voltages, powers, currents } = response.data;
+      const {
+        voltages,
+        powers,
+        currents,
+        modelType,
+        temperature,
+        hydrogen,
+        oxygen,
+        RH_Cathode,
+        RH_Anode,
+      } = response.data;
 
       toast.success("Prediction successful");
 
@@ -132,7 +147,12 @@ export function PredictionForm() {
         voltages,
         powers,
         currents,
-        modelType: values.modelType,
+        modelType,
+        temperature,
+        hydrogen,
+        oxygen,
+        RH_Cathode,
+        RH_Anode,
       });
 
       const event = new CustomEvent("prediction-updated", {
@@ -140,7 +160,12 @@ export function PredictionForm() {
           currents,
           voltages,
           powers,
-          modelType: values.modelType,
+          modelType,
+          temperature,
+          hydrogen,
+          oxygen,
+          RH_Cathode,
+          RH_Anode,
         },
       });
       window.dispatchEvent(event);
