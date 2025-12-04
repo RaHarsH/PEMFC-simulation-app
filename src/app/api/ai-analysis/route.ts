@@ -93,6 +93,7 @@ Provide technical insights on:
 - **Technical Rigor:** Use terms like "Concentration Polarization", "Nernst Voltage", and "Stoichiometric Ratio".
 - **Always start with the heading Summary, Performance Analysis etc** 
 - **Dont mention as a world class engineer or tech expert i... in the output, just get the answer like summary and others** 
+ **Maintain a neutral to positive, professional tone. Present observations objectively without mentioning "as an engineer" or similar phrases. Frame any limitations as operational considerations rather than failures. Be factual without exaggeration.
 `)
 
 const analysisChain = RunnableSequence.from([

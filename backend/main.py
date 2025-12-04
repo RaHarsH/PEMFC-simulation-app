@@ -26,10 +26,10 @@ app.add_middleware(
 
 MODEL_PATHS = {
     # dont use linear_model.pkl since it takes 8 features as input, use linear_model2.pkl
-    'linear': 'models/linear_model2.pkl',
-    'svr': 'models/svr_model.pkl',
+    'linear': 'models/pemfc_linear_regressor2.pkl',
+    'svr': 'models/pemfc_svr_model.pkl',
     'ann': 'models/ann_model.h5',
-    'stack_model': 'models/baseline_stacking_model.pkl',
+    'stack_model': 'models/pemfc_stack_model.pkl',
 }
 
 class PredictionRequest(BaseModel):
@@ -39,8 +39,8 @@ class PredictionRequest(BaseModel):
     T: float
     Hydrogen: float
     Oxygen: float
-    RH_Cathode: Optional[float] = None
     RH_Anode: Optional[float] = None
+    RH_Cathode: Optional[float] = None
 
 
 @app.post('/predict-output')
@@ -66,10 +66,10 @@ async def predict(data: PredictionRequest):
     # heats = []
 
     for current in data.I:
-        input_data = np.array([[current, data.T, data.Hydrogen, data.Oxygen]])
+        input_data = np.array([[current, data.T, data.Hydrogen, data.Oxygen, data.RH_Anode, data.RH_Cathode]])
 
-        if model_type == 'linear' or model_type == 'ann' or model_type == 'stack_model':
-            input_data = np.append(input_data, [[data.RH_Cathode, data.RH_Anode]], axis = 1)
+        # if model_type == 'linear' or model_type == 'ann' or model_type == 'stack_model' or model_type == 'svr':
+        #     input_data = np.append(input_data, [[data.RH_Anode, data.RH_Cathode]], axis = 1)
 
         
         voltage_pred = float(model.predict(input_data)[0])

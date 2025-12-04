@@ -7,14 +7,17 @@ interface PredictionPayload {
   T: number
   Hydrogen: number
   Oxygen: number
-  RH_Cathode?: number
   RH_Anode?: number
+  RH_Cathode?: number
 }
 
 export async function POST(request: Request) {
   try {
     const data = await request.json()
-    const { modelType, currents, temperature, hydrogen, oxygen, RH_Cathode, RH_Anode } = data
+    const { modelType, currents, temperature, hydrogen, oxygen, RH_Anode, RH_Cathode } = data
+
+    console.log("Currents:", currents)
+    console.log("Temperature:", temperature)
 
     console.log("Processing prediction request:", { modelType, temperature })
 
@@ -26,7 +29,7 @@ export async function POST(request: Request) {
       Oxygen: oxygen,
     }
 
-    if (modelType === "linear" || modelType === "ann" || modelType === "stack_model") {
+    if (modelType === "linear" || modelType === "ann" || modelType === "stack_model" || modelType === "svr") {
       payload.RH_Cathode = RH_Cathode
       payload.RH_Anode = RH_Anode
     }
@@ -53,8 +56,8 @@ export async function POST(request: Request) {
       temperature: data.temperature,
       hydrogen: data.hydrogen,
       oxygen: data.oxygen,
-      RH_Cathode,
       RH_Anode,
+      RH_Cathode,
     })
   } catch (error: any) {
     console.error("Error in prediction:", error)

@@ -31,31 +31,32 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Slider } from "@/components/ui/slider";
-
 import { Save, Zap } from "lucide-react";
 import axios from "axios";
 import { toast } from "sonner";
 
 const otherModelsSchema = z.object({
   modelType: z.enum(["linear", "ann", "stack_model"]),
-  currentMin: z.coerce.number().min(-1).max(3),
-  currentMax: z.coerce.number().min(-1).max(3),
-  currentSteps: z.coerce.number().min(0.01).max(1),
-  temperature: z.coerce.number().min(-2).max(2),
-  hydrogen: z.coerce.number().min(-2).max(3),
-  oxygen: z.coerce.number().min(-3).max(3),
-  RH_Cathode: z.coerce.number().min(-2).max(2),
-  RH_Anode: z.coerce.number().min(-3).max(3),
+  currentMin: z.coerce.number().min(0).max(360),
+  currentMax: z.coerce.number().min(0).max(360),
+  currentSteps: z.coerce.number().min(0.01).max(50),
+  temperature: z.coerce.number().min(20).max(90),
+  hydrogen: z.coerce.number().min(0).max(0.02),
+  oxygen: z.coerce.number().min(0).max(0.1),
+  RH_Anode: z.coerce.number().min(0).max(1),
+  RH_Cathode: z.coerce.number().min(0).max(1.5),
 });
 
 const svrModelSchema = z.object({
   modelType: z.literal("svr"),
-  currentMin: z.coerce.number().min(-1).max(3),
-  currentMax: z.coerce.number().min(-1).max(3),
-  currentSteps: z.coerce.number().min(0.01).max(1),
-  temperature: z.coerce.number().min(-2).max(2),
-  hydrogen: z.coerce.number().min(-2).max(3),
-  oxygen: z.coerce.number().min(-3).max(3),
+  currentMin: z.coerce.number().min(0).max(360),
+  currentMax: z.coerce.number().min(0).max(360),
+  currentSteps: z.coerce.number().min(0.01).max(50),
+  temperature: z.coerce.number().min(20).max(90),
+  hydrogen: z.coerce.number().min(0).max(0.02),
+  oxygen: z.coerce.number().min(0).max(0.1),
+  RH_Anode: z.coerce.number().min(0).max(1),
+  RH_Cathode: z.coerce.number().min(0).max(1.5),
 });
 
 export const formSchema = z.discriminatedUnion("modelType", [
@@ -73,22 +74,22 @@ export function PredictionForm() {
     temperature?: number;
     hydrogen?: number;
     oxygen?: number;
-    RH_Cathode?: number;
     RH_Anode?: number;
+    RH_Cathode?: number;
   } | null>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       modelType: "linear",
-      currentMin: -0.88678,
-      currentMax: 2.21713,
-      currentSteps: 0.1,
-      temperature: -1.26144,
-      hydrogen: -1.87323,
-      oxygen: -1.22799,
-      RH_Cathode: -1.5,
-      RH_Anode: -2,
+      currentMin: 0,
+      currentMax: 100,
+      currentSteps: 5,
+      temperature: 60,
+      hydrogen: 0.002,
+      oxygen: 0.014,
+      RH_Anode: 0.5,
+      RH_Cathode: 1.0,
     },
   });
 
@@ -121,57 +122,62 @@ export function PredictionForm() {
       );
 
       const predictionData = {
-        ...values,
-        currents: currentRange,
+        modelType: values.modelType, // Changed from model_type
+        currents: currentRange, // Changed from I
+        temperature: values.temperature, // Changed from T
+        hydrogen: values.hydrogen, // Changed from Hydrogen
+        oxygen: values.oxygen, // Changed from Oxygen
+        RH_Anode: values.RH_Anode,
+        RH_Cathode: values.RH_Cathode,
       };
 
       console.log("DEBUG: Prediction data:", predictionData);
 
-      const response = await axios.post("/api/predict", predictionData);
+      const response = await fetch("/api/predict", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(predictionData),
+      });
 
-      const {
-        voltages,
-        powers,
-        currents,
-        modelType,
-        temperature,
-        hydrogen,
-        oxygen,
-        RH_Cathode,
-        RH_Anode,
-      } = response.data;
+      if (!response.ok) {
+        throw new Error("Prediction failed");
+      }
 
-      toast.success("Prediction successful");
+      const result = await response.json();
 
       setPredictionResult({
-        voltages,
-        powers,
-        currents,
-        modelType,
-        temperature,
-        hydrogen,
-        oxygen,
-        RH_Cathode,
-        RH_Anode,
+        voltages: result.voltages,
+        powers: result.powers,
+        currents: result.currents,
+        modelType: values.modelType,
+        temperature: values.temperature,
+        hydrogen: values.hydrogen,
+        oxygen: values.oxygen,
+        RH_Anode: values.RH_Anode,
+        RH_Cathode: values.RH_Cathode,
       });
 
       const event = new CustomEvent("prediction-updated", {
         detail: {
-          currents,
-          voltages,
-          powers,
-          modelType,
-          temperature,
-          hydrogen,
-          oxygen,
-          RH_Cathode,
-          RH_Anode,
+          currents: result.currents,
+          voltages: result.voltages,
+          powers: result.powers,
+          modelType: values.modelType,
+          temperature: values.temperature,
+          hydrogen: values.hydrogen,
+          oxygen: values.oxygen,
+          RH_Anode: values.RH_Anode,
+          RH_Cathode: values.RH_Cathode,
         },
       });
       window.dispatchEvent(event);
+      toast.success("Prediction successful");
+      console.log("Prediction successful");
     } catch (error) {
-      console.error("Prediction failed:", error);
       toast.error("Prediction failed");
+      console.error("Prediction failed:", error);
       setPredictionResult(null);
     } finally {
       setIsSubmitting(false);
@@ -192,16 +198,13 @@ export function PredictionForm() {
         powers: predictionResult.powers,
       };
 
-      await axios.post("/api/predictions", predictionData, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      await axios.post("/api/predictions", predictionData);
 
       toast.success("Saved to database");
+      console.log("Saved to database:", predictionData);
     } catch (error) {
-      console.error("Save failed:", error);
       toast.error("Failed to save");
+      console.error("Save failed:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -239,9 +242,9 @@ export function PredictionForm() {
                       <SelectItem value="svr">
                         Support Vector Regression (SVR)
                       </SelectItem>
-                      <SelectItem value="ann">
+                      {/* <SelectItem value="ann">
                         Artificial Neural Network (ANN)
-                      </SelectItem>
+                      </SelectItem> */}
                       <SelectItem value="stack_model">
                         Baseline Stack Model
                       </SelectItem>
@@ -268,8 +271,11 @@ export function PredictionForm() {
                     <FormItem>
                       <FormLabel>Min Current (A)</FormLabel>
                       <FormControl>
-                        <Input type="number" {...field} />
+                        <Input type="number" step="0.1" {...field} />
                       </FormControl>
+                      <FormDescription className="text-xs">
+                        Range: 0-360 A
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -281,8 +287,11 @@ export function PredictionForm() {
                     <FormItem>
                       <FormLabel>Max Current (A)</FormLabel>
                       <FormControl>
-                        <Input type="number" {...field} />
+                        <Input type="number" step="0.1" {...field} />
                       </FormControl>
+                      <FormDescription className="text-xs">
+                        Range: 0-360 A
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -293,18 +302,18 @@ export function PredictionForm() {
                 name="currentSteps"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Steps: {field.value}</FormLabel>
+                    <FormLabel>Step Size: {field.value} A</FormLabel>
                     <FormControl>
                       <Slider
-                        min={0.001}
-                        max={1}
-                        step={0.01}
+                        min={0.1}
+                        max={50}
+                        step={0.1}
                         value={[field.value]}
                         onValueChange={(value) => field.onChange(value[0])}
                       />
                     </FormControl>
                     <FormDescription>
-                      Number of current points to generate.
+                      Increment between current points.
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -317,104 +326,132 @@ export function PredictionForm() {
             {/* Operating Conditions */}
             <div className="space-y-4">
               <h3 className="text-sm font-medium">Operating Conditions</h3>
+
               <FormField
                 control={form.control}
                 name="temperature"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Temperature (°C): {field.value}</FormLabel>
+                    <FormLabel>
+                      Temperature: {field.value.toFixed(1)} °C
+                    </FormLabel>
                     <FormControl>
                       <Slider
-                        min={-2}
-                        max={2}
+                        min={20}
+                        max={90}
                         step={0.1}
                         value={[field.value]}
                         onValueChange={(value) => field.onChange(value[0])}
                       />
                     </FormControl>
+                    <FormDescription className="text-xs">
+                      Typical range: 20-90°C
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+
               <FormField
                 control={form.control}
                 name="hydrogen"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Hydrogen flow rate: {field.value}</FormLabel>
+                    <FormLabel>
+                      Hydrogen Flow Rate: {field.value.toFixed(5)}
+                    </FormLabel>
                     <FormControl>
                       <Slider
-                        min={-2}
-                        max={3}
-                        step={0.1}
+                        min={0}
+                        max={0.02}
+                        step={0.0001}
                         value={[field.value]}
                         onValueChange={(value) => field.onChange(value[0])}
                       />
                     </FormControl>
+                    <FormDescription className="text-xs">
+                      Typical range: 0-0.02
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+
               <FormField
                 control={form.control}
                 name="oxygen"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Oxygen flow rate: {field.value}</FormLabel>
+                    <FormLabel>
+                      Oxygen Flow Rate: {field.value.toFixed(5)}
+                    </FormLabel>
                     <FormControl>
                       <Slider
-                        min={-3}
-                        max={3}
-                        step={0.1}
+                        min={0}
+                        max={0.1}
+                        step={0.0001}
                         value={[field.value]}
                         onValueChange={(value) => field.onChange(value[0])}
                       />
                     </FormControl>
+                    <FormDescription className="text-xs">
+                      Typical range: 0-0.1
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+
               {(modelType === "linear" ||
                 modelType === "ann" ||
-                modelType === "stack_model") && (
+                modelType === "stack_model" ||
+                modelType === "svr") && (
                 <>
-                  {/* Relative Humidity of Cathode */}
-                  <FormField
-                    control={form.control}
-                    name="RH_Cathode"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>RH Cathode: {field.value}</FormLabel>
-                        <FormControl>
-                          <Slider
-                            min={-2}
-                            max={3}
-                            step={0.1}
-                            value={[field.value]}
-                            onValueChange={(value) => field.onChange(value[0])}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  {/* Relative Humidity of Anode */}
                   <FormField
                     control={form.control}
                     name="RH_Anode"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>RH Anode: {field.value}</FormLabel>
+                        <FormLabel>
+                          RH Anode: {field.value.toFixed(2)}
+                        </FormLabel>
                         <FormControl>
                           <Slider
-                            min={-3}
-                            max={3}
-                            step={0.1}
+                            min={0}
+                            max={1}
+                            step={0.01}
                             value={[field.value]}
                             onValueChange={(value) => field.onChange(value[0])}
                           />
                         </FormControl>
+                        <FormDescription className="text-xs">
+                          Relative humidity (0-1)
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="RH_Cathode"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          RH Cathode: {field.value.toFixed(2)}
+                        </FormLabel>
+                        <FormControl>
+                          <Slider
+                            min={0}
+                            max={1.5}
+                            step={0.01}
+                            value={[field.value]}
+                            onValueChange={(value) => field.onChange(value[0])}
+                          />
+                        </FormControl>
+                        <FormDescription className="text-xs">
+                          Relative humidity (0-1.5)
+                        </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}

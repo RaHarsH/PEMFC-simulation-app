@@ -86,10 +86,10 @@ export function DocumentationDialog() {
                 <BarChart className="h-4 w-4" />
                 Usage
               </TabsTrigger>
-              <TabsTrigger value="limitations" className="flex gap-2">
+              {/* <TabsTrigger value="limitations" className="flex gap-2">
                 <AlertTriangle className="h-4 w-4" />
                 Limitations
-              </TabsTrigger>
+              </TabsTrigger> */}
             </TabsList>
 
             <ScrollArea className="h-[50vh] pr-4">
@@ -281,7 +281,6 @@ export function DocumentationDialog() {
                               >
                                 <strong>Temperature:</strong>
                               </Badge>
-                              -2 to 2°C (recommended: -1.26144 - 1.45879°C)
                             </li>
                             <li>
                               <Badge
@@ -290,8 +289,6 @@ export function DocumentationDialog() {
                               >
                                 <strong>Hydrogen Flow Rate:</strong>
                               </Badge>{" "}
-                              -2 to 3 (recommended: &gt;=-1.87323 &
-                              &lt;=2.33931)
                             </li>
                             <li>
                               <Badge
@@ -300,8 +297,6 @@ export function DocumentationDialog() {
                               >
                                 <strong>Oxygen Flow Rate:</strong>
                               </Badge>{" "}
-                              -3 to 3 (recommended: &gt;=-1.22799 &
-                              &lt;=2.04881)
                             </li>
                           </ul>
                         </div>

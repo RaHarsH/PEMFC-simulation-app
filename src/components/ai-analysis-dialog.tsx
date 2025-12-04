@@ -164,19 +164,19 @@ export function AIAnalysisDialog({
         </DialogHeader>
 
         <Tabs defaultValue="summary" className="px-6 pb-6">
-          <TabsList className="w-full mb-4 grid grid-cols-4">
+          <TabsList className="w-full mb-4 grid grid-cols-2">
             <TabsTrigger value="summary" className="flex gap-2">
               <FileText className="h-4 w-4" />
               Summary
             </TabsTrigger>
-            <TabsTrigger value="findings" className="flex gap-2">
+            {/* <TabsTrigger value="findings" className="flex gap-2">
               <Zap className="h-4 w-4" />
               Findings
             </TabsTrigger>
             <TabsTrigger value="performance" className="flex gap-2">
               <TrendingUp className="h-4 w-4" />
               Performance
-            </TabsTrigger>
+            </TabsTrigger> */}
             <TabsTrigger value="conditions" className="flex gap-2">
               <Settings className="h-4 w-4" />
               Conditions
